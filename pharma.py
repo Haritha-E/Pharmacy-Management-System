@@ -449,8 +449,8 @@ class PharmacyManagementSystem:
         my_cursor=conn.cursor()
         my_cursor.execute("update cart set MedName=%s,Quantity=%s,Price=%s where Ref=%s",(
             self.addmed_var.get(),
-            self.addprice_var.get(),
             self.addquant_var.get(),
+            self.addprice_var.get(),
             self.refMed_var.get(),
         ))
         conn.commit()
