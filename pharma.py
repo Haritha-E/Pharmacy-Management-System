@@ -1,4 +1,5 @@
 from tkinter import*
+import tkinter as tk
 from PIL import Image,ImageTk
 from tkinter import ttk
 import mysql.connector
@@ -532,12 +533,20 @@ class PharmacyManagementSystem:
         
     #*****************************************************Main Table****************************************************************
     def add_data(self):
-        if self.ref_var.get()=="" or self.lot_var.get()=="":
-            messagebox.showerror("Error","All fields are required")
-        else:
-            conn=mysql.connector.connect(host="localhost",username="root",password="root",database="pharmacy")
-            my_cursor=conn.cursor()
-            my_cursor.execute("insert into pharmacy values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(
+        conn = mysql.connector.connect(host="localhost", user="root", password="root", database="pharmacy")
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("SELECT product FROM pharmacy WHERE medName=%s AND price=%s", (self.medName_var.get(), self.price_var.get()))
+            result = cursor.fetchone()
+
+            if result:
+                new_quantity = result[0] + int(self.product_var.get())
+                cursor.execute("UPDATE pharmacy SET product=%s WHERE medName=%s AND price=%s",
+                               (new_quantity, self.medName_var.get(), self.price_var.get()))
+                messagebox.showinfo("Success", "Medicine quantity updated successfully")
+            else:
+                cursor.execute("insert into pharmacy values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(
                 self.ref_var.get(),
                 self.cmpName_var.get(),
                 self.typeMed_var.get(),
@@ -552,11 +561,16 @@ class PharmacyManagementSystem:
                 self.price_var.get(),
                 self.product_var.get(),
             ))
+                messagebox.showinfo("Success", "Medicine added successfully")
+
             conn.commit()
-            self.fetch_data()
             self.reset()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error due to: {str(e)}")
+        finally:
             conn.close()
-            messagebox.showinfo("Success","Data has been inserted")
+            self.fetch_data()
             
             
     def fetch_data(self):
@@ -571,7 +585,6 @@ class PharmacyManagementSystem:
         self.update_comboboxes()
         conn.commit()
         conn.close()
-
         
         
     def get_cursor(self, event=""):
